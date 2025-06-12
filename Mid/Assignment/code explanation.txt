@@ -1,0 +1,289 @@
+**Import necessary libraries**
+
+📦 import os
+Purpose: Brings in Python’s built-in os (Operating System) module.
+📦 import numpy as np
+Purpose: Imports NumPy, the core library for numerical operations in Python.
+📦 import matplotlib.pyplot as plt
+Purpose: Imports pyplot from Matplotlib, a popular plotting library.
+📦 from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
+Purpose: Brings specific metrics functions from Scikit-learn.
+📦 import tensorflow as tf
+Purpose: Loads TensorFlow, the deep learning library you'll use to build and train your model.
+📦 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+Purpose: Brings in ImageDataGenerator from Keras inside TensorFlow.
+📦 from tensorflow.keras.applications import DenseNet121
+Purpose: Imports the DenseNet121 pre-trained model.
+📦 from tensorflow.keras import layers, models
+Purpose: Imports the layers (like Dense, Dropout, Flatten, etc.) and models (Sequential, Model) from Keras.
+
+
+
+**Upload the path of google drive and set parameters**
+
+📂 path = '/content/drive/MyDrive/dataset'
+Purpose: Defines where your image dataset is located inside your mounted Google Drive.
+📐 img_size = (224, 224)
+Purpose: Sets the target size for resizing all images.
+📦 batch_size = 32
+Purpose: Defines how many images to process at once during training.
+🔥 epochs = 10
+Purpose: Sets how many full passes through the training dataset you want.
+
+
+
+**Data augmentation and preprocessing part**
+
+
+🛠 train_datagen = ImageDataGenerator(...)
+Purpose: Creates a data loader that also preprocesses/augments images on the fly.
+
+Settings inside it:
+
+rescale=1./255: Normalizes pixel values from [0-255] to [0-1] — helps model training.
+
+validation_split=0.3: Reserves 30% of the data for validation/testing, 70% for training.
+
+horizontal_flip=True: Randomly flips images horizontally during training.
+
+vertical_flip=True: Randomly flips images vertically too.
+
+
+🎨 def to_grayscale(image):
+
+return tf.image.rgb_to_grayscale(image)
+Purpose: Defines a helper function to convert a color image into grayscale (1 channel).
+
+🎨 def preprocess(image):
+Purpose: Defines another helper function that:
+
+Resizes image to 224×224.
+
+Converts it to grayscale (1 channel).
+
+Converts grayscale back to 3 channels because pre-trained models like DenseNet expect 3 channels (RGB input).
+
+
+
+🚚 train_generator = train_datagen.flow_from_directory(...)
+Purpose: Actually loads the training images.
+
+Details:
+
+path: The folder path where images are stored.
+
+target_size=img_size: Resizes every image to (224,224).
+
+batch_size=batch_size: Loads 32 images at a time.
+
+class_mode='binary': Since you have 2 classes (brain_tumor / non_brain_tumor).
+
+subset='training': Only loads the 70% training set (because of the earlier 30% split).
+
+shuffle=True: Randomizes the image order — good for training!
+
+
+
+
+
+🚚 test_generator = train_datagen.flow_from_directory(...)
+Purpose: Loads the validation/test images.
+
+Details:
+
+Same settings as train generator, except:
+
+subset='validation': Loads the 30% validation (unseen) data.
+
+shuffle=False: No shuffling because during evaluation you want consistent, repeatable results.
+
+
+
+
+**Choose DenseNet121 model and create model**
+
+🧠 base_model = DenseNet121(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
+Purpose: Loads a pre-trained DenseNet121 model.
+
+Settings:
+
+include_top=False: Don't load the original DenseNet's final classification layers — we will add our own custom head.
+
+weights='imagenet': Load weights pre-trained on ImageNet (big image dataset).
+
+input_shape=(224,224,3): Expect images resized to 224×224 with 3 color channels.
+
+
+🧊 base_model.trainable = False
+Purpose: Freeze the DenseNet121 layers so that during training only your new layers are updated.
+
+
+
+
+
+
+🏗️ model = models.Sequential([...])
+Purpose: Build a new complete model by stacking layers sequentially.
+
+Let's look inside:
+
+
+Layer	Purpose
+layers.Input(shape=(224, 224, 3))	Defines the input shape for the model.
+layers.Lambda(preprocess)	Applies your custom grayscale preprocessing before feeding images to DenseNet.
+base_model	DenseNet121 pre-trained feature extractor.
+layers.GlobalAveragePooling2D()	Reduces the big feature maps to a single feature vector (makes it ready for Dense layers).
+layers.Dense(256, activation='relu')	Adds a fully connected layer with 256 neurons and ReLU activation for non-linearity.
+layers.Dropout(0.5)	Randomly turns off 50% of neurons during training to prevent overfitting.
+layers.Dense(1, activation='sigmoid')	Final output layer: gives a single probability (0 to 1) for binary classification (brain tumor or not).
+
+
+🛠️ model.compile(...)
+Purpose: Sets up how the model will learn.
+
+Settings:
+
+optimizer='adam': A popular optimizer that adapts learning rates automatically.
+
+loss='binary_crossentropy': Best choice for binary classification.
+
+metrics=['accuracy']: Tracks accuracy during training and evaluation.
+
+
+
+🧾 model.summary()
+Purpose: Prints a summary of all layers inside your model — very useful to verify your architecture is correct!
+
+
+
+**The process of train the Model**
+
+🏋️‍♂️ history = model.fit(...)
+Purpose: This trains the model using the training data and evaluates it on the validation data.
+
+
+Now inside fit(...):
+
+Argument	Purpose
+train_generator	Feeds the training images and labels (from your 70% training set) batch by batch.
+epochs=epochs	Trains the model for the number of epochs you defined earlier (epochs=10).
+validation_data=test_generator	After each epoch, evaluates the model performance on the 30% validation (test) set.
+
+
+
+📈 history
+Type: A history object that stores:
+
+training accuracy,
+
+training loss,
+
+validation accuracy,
+
+validation loss
+
+
+
+**Plot Training & Validation Accuracy**
+
+🎨 plt.plot(history.history['accuracy'], label='Train Accuracy')
+Purpose: Plots the training accuracy curve.
+
+🎨 plt.plot(history.history['val_accuracy'], label='Test Accuracy')
+Purpose: Plots the validation (test) accuracy curve.
+
+🏷️ plt.xlabel('Epochs')
+Purpose: Labels the X-axis as "Epochs" — number of training cycles.
+
+🏷️ plt.ylabel('Accuracy')
+Purpose: Labels the Y-axis as "Accuracy" — performance metric.
+
+🏷️ plt.title('Training & Test Accuracy over Epochs')
+Purpose: Sets a title for the plot to explain what the graph shows.
+
+📜 plt.legend()
+Purpose: Displays the legend box so you can know which curve is train and which is test.
+
+🛠️ plt.grid(True)
+Purpose: Adds a background grid to the plot for easier reading of values.
+
+📈 plt.show()
+Purpose: Finally displays the plot on the screen!
+
+
+
+
+
+**Finally Evaluate the Model & it's Metrics**
+
+
+🎯 y_pred_probs = model.predict(test_generator)
+Purpose: Predicts the probability scores (between 0 and 1) for all images in the test set.
+
+🎯 y_pred = (y_pred_probs > 0.5).astype(int).reshape(-1)
+Purpose: Converts the predicted probabilities into class labels:
+
+If >0.5 → Class 1 (Tumor)
+
+If ≤0.5 → Class 0 (Non Tumor)
+
+
+🎯 y_true = test_generator.classes
+Purpose: Fetches the true labels (0 or 1) from the test data.
+
+📜 print("Classification Report:\n")
+Purpose: Prints a title before the full classification report.
+
+📜 print(classification_report(y_true, y_pred, target_names=['Non Tumor', 'Tumor']))
+Purpose: Prints detailed evaluation metrics:
+
+Precision
+
+Recall
+
+F1-score
+
+Support (number of true examples for each class)
+
+
+  Metric                	 Meaning
+---------                   ---------------
+Precision	 Out of predicted positives, how many were correct?
+Recall	         Out of actual positives, how many were captured?
+F1-score	 Harmonic mean of precision and recall.
+
+
+
+🔲 cm = confusion_matrix(y_true, y_pred)
+Purpose: Creates the Confusion Matrix showing:
+
+True Positive
+
+True Negative
+
+False Positive
+
+False Negative
+
+
+
+🔲 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Non Tumor', 'Tumor'])
+Purpose: Prepares to plot the confusion matrix with class names instead of numbers.
+
+
+🔲 disp.plot(cmap=plt.cm.Blues)
+Purpose: Actually plots the confusion matrix with a nice blue color theme.
+
+🔲 plt.title('Confusion Matrix')
+Purpose: Adds a title above the confusion matrix plot.
+
+🔲 plt.show()
+Purpose: Displays the confusion matrix.
+
+
+
+
+
+
+
+

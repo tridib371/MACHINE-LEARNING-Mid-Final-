@@ -1,0 +1,15 @@
+
+
+
+[1] Rana, R., Begum, S., Islam, M. R., Haque, M. A., & Rahman, M. M. (2022). Overview of brain cancer: its symptoms, diagnosis and treatments. International Journal of Current Research and Review, 14(11), 1–7.
+
+[2]  S. G. K. Patro, N. Govil, S. Saxena, B. K. Mishra, A. T. Zamani, A. B. Miled, N. Parveen, H. Elshafie, and M. Hamdan, "Brain Tumor Classification Using an Ensemble of Deep Learning Techniques," IEEE Access, vol. 12, pp. 162094–162106, 2024.
+
+[3] N. M. H. Hassan and W. Boulila, "Efficient Approach for Brain Tumor Detection and Classification Using Fuzzy Thresholding and Deep Learning Algorithms," IEEE Access, vol. XX, pp. XX–XX, 2024, doi: 10.1109/ACCESS.2024.DoiNumber.
+
+[4] B. Thokar, B. Sapkota, B. R. Dawadi, and S. R. Joshi, "Medical Image Segmentation for Anomaly Detection Using Deep Learning Techniques," IEEE Access, vol. 12, pp. 143929–143943, Dec. 2024, doi: 10.1109/ACCESS.2024.3512664.
+
+[5] R. W. Anwar, F. Ullah, and M. Abrar, "Transformative Transfer Learning for MRI Brain Tumor Precision: Innovative Insights," IEEE Access, vol. XX, pp. XX–XX, 2025, doi: 10.1109/ACCESS.2025.3542451.
+
+[6] A. Tariq, I. Ahmad, M. M. Iqbal, and M. J. Iqbal, "Transforming Brain Tumor Detection: Empowering Multi-Class Classification With Vision Transformers and EfficientNetV2," IEEE Access, vol. XX, pp. XX–XX, 2025, doi: 10.1109/ACCESS.2025.3555638.
+
